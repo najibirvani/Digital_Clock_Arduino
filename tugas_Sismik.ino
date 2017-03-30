@@ -1,8 +1,10 @@
 int segment[] ={7,6,11,12,13,8,9,10};     // pin a, b, c, d, e, f, g, dp
 int push[]    ={A2,A1,A0,A3};             // push[0]=menu, push[1]=select, push[2]=plus, push[3]=minus
 int ledPin[]  ={A4,A5};                   // LED Pin detik
+int buzzer    = 1;
 int seg_con[]  = {5,4,3,2};               // Selector 7-segment
 int halfSecond = 0;                       // Nilai tiap 500ms
+int loopAlarm;
 
 // Boolean untuk aktifasi setiap event
 bool isProgramRun = false;
@@ -36,7 +38,8 @@ void setup()
      //digitalWrite(push[i],HIGH);      // pengesetan nilai control 7-segmen
   }
   pinMode (ledPin[0],OUTPUT);         // Pengesetan LED
-  pinMode (ledPin[1],OUTPUT);         // Pengesetan LED  
+  pinMode (ledPin[1],OUTPUT);         // Pengesetan LED 
+  pinMode (buzzer,OUTPUT);         // Pengesetan Buzzer  
 
   // Stop interrupts
   cli();
@@ -61,7 +64,6 @@ void setup()
   // Allow interrupts
   sei();
 
-  Serial.begin(9600);
 }
 
 // Prosedur Led On untuk jam digital
@@ -171,6 +173,7 @@ ISR(TIMER1_COMPA_vect)
               timer_detikSatuan = 0;
               isProgramRun = false;
               doneTimer = true;
+              alarmON();
             }
           }
         }
@@ -195,6 +198,8 @@ void setting_angka ()
   unsigned char x = 5; 
   signed char digit1, digit2, digit3, digit4;
   unsigned char maksimumDigit1, maksimumDigit2;
+
+  isProgramRun = false;
   
   switch (mode)
   {
@@ -553,15 +558,15 @@ void cekMode()
   startStopwatch = false;
   startTimer = true;
   isProgramRun = false;
+  ledOff();
 
   // Looping hingga dipilih mode dengan menekan tombol select
   while (!select)
   {
     show (10, 10, 10, mode);
-    delay(5);
     if (digitalRead(push[0])==0)
     {
-      delay(200);
+      delay(150);
       mode++;
       if (mode>3)
       {
@@ -580,6 +585,44 @@ void cekMode()
     isStopwatch = true;
   }
 }
+
+void alarmON()
+{
+  digitalWrite(buzzer, HIGH);
+  delay(120);
+  digitalWrite(buzzer, LOW);
+  delay(100);
+  digitalWrite(buzzer, HIGH);
+  delay(120);
+  digitalWrite(buzzer, LOW);
+  delay(100);
+  digitalWrite(buzzer, HIGH);
+  delay(120);
+  digitalWrite(buzzer, LOW);
+  delay(100);
+  digitalWrite(buzzer, HIGH);
+  delay(1000);
+  digitalWrite(buzzer, LOW);
+  delay(200);
+  digitalWrite(buzzer, HIGH);
+  delay(100);
+  digitalWrite(buzzer, LOW);
+  delay(100);
+  digitalWrite(buzzer, HIGH);
+  delay(100);
+  digitalWrite(buzzer, LOW);
+  delay(100);
+  digitalWrite(buzzer, HIGH);
+  delay(100);
+  digitalWrite(buzzer, LOW);
+  delay(600);
+}
+
+void alarmOFF()
+{
+  digitalWrite(buzzer, LOW);
+}
+
 // Program Running dari setiap mode yang dipilih
 void runningProgram()
 {
@@ -602,6 +645,11 @@ void runningProgram()
                     init_angka();
                   }
                   show(jam_puluhan, jam_satuan, menit_puluhan, menit_satuan); 
+                  if (digitalRead(push[1]) == 0)
+                  {
+                    setting_angka(); 
+                    isProgramRun = true;
+                  }
                   if (digitalRead(push[0]) == 0)
                   {
                     startJam = false; 
@@ -688,7 +736,12 @@ void runningProgram()
                 while (startTimer)
                 {
                   show(timer_menitPuluhan, timer_menitSatuan, timer_detikPuluhan, timer_detikSatuan);
-                  if (digitalRead(push[0])== 0 || doneTimer)
+                  if (digitalRead(push[0])== 0)
+                  {
+                    startTimer = false;
+                    doneTimer = false;
+                  }
+                  if (doneTimer)
                   {
                     startTimer = false;
                     doneTimer = true; 
@@ -696,11 +749,17 @@ void runningProgram()
                 }
                 while (doneTimer)
                 {
-                  show(0,0,0,0);
-                  if (digitalRead(push[0])==0)
+                  //show(10,0,0,0);
+                  for (loopAlarm=0; loopAlarm<3; loopAlarm++)
                   {
-                    doneTimer = false; 
+                    alarmON(); 
                   }
+                  alarmOFF();
+                  while (digitalRead(push[0])!=0)
+                  {
+                    show(10,10,10,10);
+                  }
+                  doneTimer = false;
                 }
              }
              break;
