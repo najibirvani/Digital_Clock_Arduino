@@ -209,7 +209,7 @@ void setting_angka ()
               digit3  = menit_puluhan;
               digit4  = menit_satuan;
               maksimumDigit1 = 2;
-              maksimumDigit2 = 3;
+              maksimumDigit2 = 9;
              }
              break;
     case 3 : {   // Timer
@@ -599,7 +599,7 @@ void alarmON()
   digitalWrite(buzzer, HIGH);
   delay(120);
   digitalWrite(buzzer, LOW);
-  delay(100);
+  delay(150);
   digitalWrite(buzzer, HIGH);
   delay(1000);
   digitalWrite(buzzer, LOW);
